@@ -1,0 +1,61 @@
+{
+  "instances": {
+    "standard" : {
+      "repo": "https://github.com/OpenSlides/openslides-docker",
+	  "branch": "master",
+      "commit": "8b9377f9074ee0e40d5467f7ab3f5e8d5879e5fa",
+      "services": {
+        "core": {
+          "scale": 1,
+          "REPOSITORY_URL": "https://github.com/OpenSlides/OpenSlides.git",
+          "BRANCH": "master",
+          "COMMIT_HASH": "03b17837ed2c88692f1b99ec5b9b477f86fdddb6"
+        },
+        "web": {
+          "scale": 1
+        },
+        "postgres": {
+          "scale": 1,
+          "REPLICATION_USER": "repluser",
+          "REPLICATION_PASS": "repluserpass"
+        },
+        "pg-slave": {
+          "scale" : 0,
+          "REPLICATION_MODE": "slave",
+          "REPLICATION_HOST": "127.0.0.1",
+          "REPLICATION_PORT": "5432",
+          "REPLICATION_USER": "repluser",
+          "REPLICATION_PASS": "repluserpass"
+        },
+        "redis": {
+          "scale": 1
+        },
+        "worker": {
+          "scale": 1
+        },
+        "nginx": {
+          "scale": 1
+        },
+        "letsencrypt": {
+          "scale": 0,
+          "VIRTUAL_HOST": "localhost",
+          "LETSENCRYPT_HOST": "localhost",
+          "LETSENCRYPT_EMAIL": "localhost",
+          "LETSENCRYPT_TEST": "true"
+        },
+        "filesync": {
+          "scale": 1,
+          "REMOTE_MODE": "MASTER",
+          "REMOTE_HOST": "localhost",
+          "REMOTE_USER": "openslides",
+          "REMOTE_PASS": "openslides"
+        },
+        "postfix": {
+          "scale": 1,
+          "maildomain": "localhost",
+          "smtp_user": "openslides:openslides"
+        }
+      }
+    }
+  }
+}

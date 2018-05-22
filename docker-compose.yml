@@ -1,0 +1,96 @@
+version: '3'
+services:
+  nginx:
+    build:
+      context: ./nginx
+      args:
+        - NGINX_HOST=localhost
+        - NGINX_PORT=80
+        - NGINX_SSL_PORT=443
+    image: nginx
+    deploy:
+      placement:
+        constraints:
+          - node.labels.master == true
+    volumes:
+      - "certs:/etc/letsencrypt/live"
+      - "nginx_html:/usr/share/nginx/html"
+      - "nginx_dhparam:/etc/nginx/dhparam"
+      - "backend_sock:/etc/nginx/sock/backend"
+      - "./nginx/htpasswd:/etc/nginx/conf.d/nginx.htpasswd"
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - ENABLE_IPV6=true
+      - TEST_CERTIFICATES=true
+    depends_on:
+      - frontend
+      - portainer
+      - registry
+    networks:
+      - front
+      - back
+  registry:
+    restart: always
+    image: registry:2
+    deploy:
+      placement:
+        constraints:
+          - node.labels.registry == true
+          - node.labels.master == true
+    volumes:
+      - "registry:/var/lib/registry"
+      - "./nginx/htpasswd:/auth/htpasswd"
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+    networks:
+      - back
+  frontend:
+    build: ./frontend
+    image: frontend
+    deploy:
+      placement:
+        constraints:
+          - node.labels.master == true
+    restart: always
+    networks:
+      - back
+    depends_on:
+      - backend
+  backend:
+    build: ./backend
+    image: backend
+    deploy:
+      placement:
+        constraints:
+          - node.labels.master == true
+    networks:
+      - back
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./instances:/app/instances"
+      - "backend_sock:/app/sock"
+  portainer:
+    image: portainer/portainer
+    deploy:
+      placement:
+        constraints:
+          - node.labels.master == true
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "portainer_data:/data"
+    networks:
+      - back
+volumes:
+  certs:
+  nginx_html:
+  nginx_dhparam:
+  portainer_data:
+  backend_sock:
+  registry:
+networks:
+  front:
+  back:
