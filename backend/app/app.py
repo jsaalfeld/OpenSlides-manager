@@ -29,7 +29,7 @@ def exceptionAsDict(ex, context):
     return dict(exception=str(ex),context=context)
 
 def listInstanceFolders():
-    os.listdir(getInstancesDir())
+    return os.listdir(getInstancesDir())
 
 def getInstanceInfo(instanceName):
     try:
@@ -102,6 +102,19 @@ app = Flask(__name__)
 @app.route("/")
 def status():
     return jsonify("{name: 'Hello World'}")
+
+@app.route("/get_instances")
+def listInstances():
+    try:
+        instanceList = listInstanceFolders()
+        instances = {}
+        i = 0
+        for instance in instanceList:
+            instances[i] = instance
+            i = i + 1
+        return jsonify(instances)
+    except Exception as e:
+        return jsonify(exceptionAsDict(e, "Get All Instances"))
 
 @app.route("/get_instance_info")
 def listInstanceInfo():
